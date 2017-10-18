@@ -159,21 +159,38 @@ _prev_spectrum = np.tile(0.01, config.N_PIXELS // 2)
 
 def visualize_spectrum(y):
     """Effect that maps the Mel filterbank frequencies onto the LED strip"""
-    global _prev_spectrum
-    y = np.copy(interpolate(y, config.N_PIXELS // 2))
-    common_mode.update(y)
-    diff = y - _prev_spectrum
-    _prev_spectrum = np.copy(y)
-    # Color channel mappings
-    r = r_filt.update(y - common_mode.value)
-    g = np.abs(diff)
-    b = b_filt.update(np.copy(y))
-    # Mirror the color channels for symmetric output
-    r = np.concatenate((r[::-1], r))
-    g = np.concatenate((g[::-1], g))
-    b = np.concatenate((b[::-1], b))
-    output = np.array([r, g,b]) * 255
-    return output
+   import RPi.GPIO as GPIO
+import time
+
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(4, GPIO.OUT)
+
+state = True
+
+# endless loop, on/off for 1 second
+while True:
+	GPIO.output(4,True)
+	time.sleep(1)	
+	GPIO.output(4,False)
+	time.sleep(1)
+    
+ # gpio_swtich.py
+# LED is on pin 4, use a 270 Ohm reistor to ground
+# Switch is on pin 22, use a pull-down resistor (10K) to ground
+
+import RPi.GPIO as GPIO
+import time
+
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(4, GPIO.OUT)
+GPIO.setup(22,GPIO.IN)
+
+# input of the switch will change the state of the LED
+while True:
+	GPIO.output(4,GPIO.input(22))
+	time.sleep(0.05)
 
 
 fft_plot_filter = dsp.ExpFilter(np.tile(1e-1, config.N_FFT_BINS),
